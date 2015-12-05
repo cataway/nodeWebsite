@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+    <style type="text/css">
+    </style>
+</head>
+<body>
+<h1>index5</h1>
+
+<form method="get" action="/data">
+    姓名：<input type="text" name="name" value="姓名"/><br/>
+    年龄：<input type="text" name="age" value="年龄"/><br/>
+    性别：<input type="radio" id="male" name="sex" value="男"/><label for="male">男</label>
+    <input type="radio" id="famale" checked name="sex" value="女"/><label for="famale">女</label>
+    <br/>
+    爱好：<input type="checkbox" name="hoby" value="动漫"/>动漫
+    <input type="checkbox" name="hoby" value="编程"/>编程
+    <input type="checkbox" checked name="hoby" value="发呆"/>发呆
+    <br/>
+    所学课程: <select name="course" multiple>
+    <option value="数学">数学</option>
+    <option value="语文">语文</option>
+    <option value="JS大法">JS大法</option>
+    <option value="历史">历史</option>
+</select>
+    <br/>
+    <select name="degree">
+        <option value="小学">小学</option>
+        <option value="初中">初中</option>
+        <option value="高中">高中</option>
+        <option value="大学">大学</option>
+        <option value="学历太高">遭人鄙视</option>
+    </select>
+    <br/>
+    <input type="button" name="btn" value="提交"/>
+</form>
+<div id="message">数据库里有多少条记录，则在这里增加多少条</div>
+<script src="serialization.js"></script>
+<script type="text/javascript">
+    var inputText = document.querySelectorAll("input[type='text']");
+    for (var i = 0; i < inputText.length; i++) {
+        inputText[i].onfocus = function () {
+            if (this.value == this.defaultValue) {
+                this.value = "";
+                this.style.color = "red";
+            }
+        }
+        inputText[i].onblur = function () {
+            if (this.value.replace(/ +g/) == "") {
+                this.value = this.defaultValue;
+                this.style.color = "";
+            }
+        }
+    }
+
+    var oBtn = document.getElementsByName("btn").item(0);
+    var message = document.getElementById("message");
+    var oTables = message.getElementsByTagName("table");
+    oBtn.onclick = function () {
+        var xhr = new XMLHttpRequest(); //创建一个请求对象
+        //xhr.open("GET","/ajax?name=王麻子&age=22&gender=0&hobby=抽烟&hobby=喝酒&hobby=打豆豆&course=语文&course=历史&course=金刚经&degree=高中&btn=提交",true);//指定发送的方式、路径（地址）
+        xhr.open("GET", "/ajax?"+serialize(this.parent),true); //true为使用异步方式，当状态改变时调用onreadystatechange回调函数
+        xhr.send(); //发送请求到http服务器并接受回应
+        xhr.onreadystatechange = function () {
+            xhr.readyState; //xhr请求对象本身的状态
+            xhr.status; //http的状态
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                xhr.responseText;//应答文本，从服务器端返回的内容字符串
+//                var oData = JSON.parse(xhr.responseText); //将返回的字符串转化为对象
+                var oData=JSON.parse(xhr.responseText);
+                //开始写数据交互
+                if (!oTables.length) {//如果message里没有table,则创建
+                    var oTable = document.createElement("table");
+                    message.appendChild(oTable);
+                    var oTbody = document.createElement("tbody");
+                    oTable.appendChild(oTbody);
+                } else { //如果有table,则把table中的tbody得到
+                    var oTbody = oTables.item(0).tBodies.item(0);
+                }
+                //将数据插入table的tbody中的行和列
+                var oTr = document.createElement("tr");//创建行
+                oTbody.appendChild(oTr);
+                for (var attr in oData) {
+                    var oTd = document.createElement("td");//创建列
+                    oTd.innerHTML = oData[attr];//列中的内容
+                    oTr.appendChild(oTd);
+                }
+            }
+        }
+    }
+
+
+</script>
+</body>
+</html>
